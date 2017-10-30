@@ -52,7 +52,7 @@ subscription-manager repos \
 # Install base packages and update system to latest packages
 echo $(date) " - Install base packages and update system to latest packages"
 
-yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs
+yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs ansible
 yum -y update --exclude=WALinuxAgent
 
 # Enable EPEL 7 repo - needed for npm
