@@ -1347,6 +1347,6 @@
 		"Node Data Storage Account Name": {
 			"type": "string",
 			"value": "[variables('newStorageAccountNodeData')]"
-		},
+		}
 	}
 }
