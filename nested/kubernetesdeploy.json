@@ -1,0 +1,216 @@
+Kubernetes﻿{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"_artifactsLocation": {
+			"type": "string",
+			"metadata": {
+				"description": "Base URL for script location"
+			}
+		},
+		"apiVersionCompute": {
+			"type": "string",
+			"metadata": {
+				"description": "API version for compute resources"
+			}
+		},
+		"newStorageAccountRegistry": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account for Docker Registry"
+			}
+		},
+		"newStorageAccountKey": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account Key for Docker Registry"
+			}
+		},
+		"newStorageAccountPersistentVolume1": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account for Persistent Volumes"
+			}
+		},
+		"newStorageAccountPV1Key": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account Key for Persistent Volumes"
+			}
+		},
+		"newStorageAccountPersistentVolume2": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account for Persistent Volumes"
+			}
+		},
+		"newStorageAccountPV2Key": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Storage Account Key for Persistent Volumes"
+			}
+		},
+		"kubernetesBastionHostname": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Kubernetes Bastion hostname"
+			}
+		},
+		"kubernetesMasterHostname": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Kubernetes Master hostname"
+			}
+		},
+		"kubernetesMasterPublicIpFqdn": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Kubernetes Master VM public IP fully qualified domain name"
+			}
+		},
+		"kubernetesMasterPublicIpAddress": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Kubernetes Master VM public IP address"
+			}
+		},
+		"kubernetesNodeHostname": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Kubernetes Node hostname"
+			}
+		},
+		"masterInstanceCount": {
+			"type": "int",
+			"minValue": 1,
+			"metadata": {
+				"description": "Number of Kubernetes Master nodes"
+			}
+		},
+		"nodeInstanceCount": {
+			"type": "int",
+			"minValue": 1,
+			"metadata": {
+				"description": "Number of kubernetes nodes"
+			}
+		},
+		"adminUsername": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Administrator username on all VMs"
+			}
+		},
+		"kubernetesPassword": {
+			"type": "securestring",
+			"minLength": 1,
+			"metadata": {
+				"description": "Administrator password for Kubernetes Console"
+			}
+		},
+		"enableMetrics": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Enable Kubernetes Metrics: true or false"
+			}
+		},
+		"enableLogging": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Enable Kubernetes Logging: true or false"
+			}
+		},
+		"enableCockpit": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Enable Cockpit: true or false"
+			}
+		},
+		"aadClientId": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure AD Client ID"
+			}
+		},
+		"aadClientSecret": {
+			"type": "securestring",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure AD Client Secret"
+			}
+		},
+		"xipioDomain": {
+			"type": "string",
+			"metadata": {
+				"description": "Xip.io Subdomain for application routing"
+			}
+		},
+		"customDomain": {
+			"type": "string",
+			"metadata": {
+				"description": "custom Subdomain for application routing"
+			}
+		},
+		"subDomainChosen": {
+			"type": "string",
+			"metadata": {
+				"description": "Subdomain chosen for application routing"
+			}
+		},
+		"sshPrivateKey": {
+			"type": "securestring",
+			"minLength": 1,
+			"metadata": {
+				"description": "SSH private key for deploying Kubernetes cluster"
+			}
+		}
+	},
+	"variables": {
+		"singlequote": "'",
+		"tenantId": "[subscription().tenantId]",
+		"subscriptionId": "[subscription().subscriptionId]",
+		"location": "[resourceGroup().location]",
+		"resourceGroupName": "[resourceGroup().name]",
+		"kubernetesDeploymentScriptUrl": "[concat(parameters('_artifactsLocation'), 'scripts/deployKubernetes.sh')]",
+		"kubernetesDeploymentScriptFileName": "deployKubernetes.sh"
+	},
+	"resources": [{
+		"type": "Microsoft.Compute/virtualMachines/extensions",
+		"name": "[concat(parameters('kubernetesBastionHostname'), '/deployKubernetes')]",
+		"location": "[resourceGroup().location]",
+		"apiVersion": "[parameters('apiVersionCompute')]",
+		"tags": {
+			"displayName": "DeployKubernetes"
+		},
+		"properties": {
+			"publisher": "Microsoft.Azure.Extensions",
+			"type": "CustomScript",
+			"typeHandlerVersion": "2.0",
+			"autoUpgradeMinorVersion": true,
+			"settings": {
+				"fileUris": [
+					"[variables('kubernetesDeploymentScriptUrl')]"
+				]
+			},
+			"protectedSettings": {
+				"commandToExecute": "[concat('bash ', variables('kubernetesDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('kubernetesPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('kubernetesMasterHostname'), '\" \"', parameters('kubernetesMasterPublicIpFqdn'), '\" \"', parameters('kubernetesMasterPublicIpAddress'), '\" \"', parameters('kubernetesNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters(parameters('subDomainChosen')), '\" \"', parameters('newStorageAccountRegistry'), '\" ', variables('singlequote'), parameters('newStorageAccountKey'), variables('singlequote'), ' \"', parameters('enableMetrics'), '\" \"', parameters('enableLogging'), '\" ', variables('singlequote'), variables('tenantId'), variables('singlequote'), ' ', variables('singlequote'), variables('subscriptionId'), variables('singlequote'), ' ', variables('singlequote'), parameters('aadClientId'), variables('singlequote'), ' ', variables('singlequote'), parameters('aadClientSecret'), variables('singlequote'), ' ', variables('singlequote'), variables('resourceGroupName'), variables('singlequote'), ' ', variables('singlequote'), variables('location'), variables('singlequote'), ' ', variables('singlequote'), parameters('newStorageAccountPersistentVolume1'), variables('singlequote'), ' ', variables('singlequote'), parameters('newStorageAccountPersistentVolume2'), variables('singlequote'), ' ', variables('singlequote'), parameters('newStorageAccountPV1Key'), variables('singlequote'), ' ', variables('singlequote'), parameters('newStorageAccountPV2Key'), variables('singlequote'), ' ', variables('singlequote'), parameters('enableCockpit'), variables('singlequote'))]"
+			}
+		}
+	}],
+	"outputs": {}
+}
