@@ -996,6 +996,9 @@
 					"customImageName": {
 						"value": "[variables('customImageName')]"
 					},
+					"newStorageAccount": {
+						"value": "[variables('newStorageAccountInfra')]"
+					},
 					"customStorageAccount": {
 						"value": "[parameters('customStorageAccount')]"
 					},
@@ -1347,6 +1350,10 @@
 		"Node Data Storage Account Name": {
 			"type": "string",
 			"value": "[variables('newStorageAccountNodeData')]"
+		},
+		"Infra Storage Account Name": {
+			"type": "string",
+			"value": "[variables('newStorageAccountInfra')]"
 		}
 	}
 }
