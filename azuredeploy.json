@@ -125,7 +125,7 @@
 				"description": "Administrator username on all VMs and first user created for Kubernetes login"
 			}
 		},
-		"KubernetesPassword": {
+		"kubernetesPassword": {
 			"type": "securestring",
 			"minLength": 1,
 			"metadata": {
